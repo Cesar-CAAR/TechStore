@@ -1,0 +1,110 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Inventario - TechStore</title>
+    <link rel="stylesheet" href="styles.css">
+    <link rel="manifest" href="manifest.json">
+    <meta name="theme-color" content="#1A1025">
+</head>
+<body>
+    <header class="header-dashboard">
+        <h1>💻 TechStore Dashboard</h1>
+        <button class="btn-primario" onclick="abrirModalCrear()">+ Nuevo Componente</button>
+    </header>
+
+    <main class="contenedor-principal">
+        <!-- Panel del Inventario -->
+        <div class="panel-tabla">
+            <table id="tabla-componentes">
+                <thead>
+                    <tr>
+                        <th>ID</th>
+                        <th>Componente</th>
+                        <th>Categoría</th>
+                        <th>Precio</th>
+                        <th>Stock</th>
+                    </tr>
+                </thead>
+                <tbody id="lista-componentes">
+                    <tr><td colspan="5" style="text-align: center; color: #8A2BE2;">Cargando inventario...</td></tr>
+                </tbody>
+            </table>
+        </div>
+
+        <!-- Modal 1: Formulario (Crear / Editar) -->
+        <div id="modal-formulario" class="oculto modal-fondo">
+            <div class="modal-contenido">
+                <h2 id="form-titulo">Nuevo Componente</h2>
+                <form id="form-componente">
+                    <input type="hidden" id="form-id">
+                    
+                    <label>Nombre del componente:</label>
+                    <input type="text" id="form-nombre" placeholder="Ej. AMD Ryzen 7 5700X" required>
+                    
+                    <label>Categoría:</label>
+                    <select id="form-categoria" required>
+                        <option value="">Selecciona una...</option>
+                        <option value="Procesador">Procesador</option>
+                        <option value="Tarjeta Gráfica">Tarjeta Gráfica</option>
+                        <option value="Placa Base">Placa Base</option>
+                        <option value="Memoria RAM">Memoria RAM</option>
+                        <option value="Almacenamiento">Almacenamiento</option>
+                        <option value="Gabinete">Gabinete</option>
+                    </select>
+                    
+                    <label>Precio ($):</label>
+                    <input type="number" id="form-precio" step="0.01" min="0.01" required>
+                    
+                    <label>Stock actual:</label>
+                    <input type="number" id="form-stock" min="0" required>
+                    
+                    <label>Especificaciones detalladas:</label>
+                    <textarea id="form-especificaciones" rows="3" placeholder="Ej. 8 Núcleos, 16 Hilos..."></textarea>
+                    
+                    <div class="botones-accion">
+                        <button type="submit" class="btn-guardar">Guardar</button>
+                        <button type="button" class="btn-cancelar" onclick="cerrarModal('modal-formulario')">Cancelar</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+
+        <!-- Modal 2: Detalles del Componente -->
+        <div id="modal-detalles" class="oculto modal-fondo">
+            <div class="modal-contenido">
+                <h2 id="detalle-nombre" style="color: #8A2BE2;">Nombre del Componente</h2>
+                <p><strong>Categoría:</strong> <span id="detalle-categoria"></span></p>
+                <p><strong>Precio:</strong> $<span id="detalle-precio" style="color:#FFD700; font-weight:bold;"></span></p>
+                <p><strong>Stock:</strong> <span id="detalle-stock"></span> unidades</p>
+                <p><strong>Especificaciones:</strong> <span id="detalle-especificaciones"></span></p>
+                
+                <div class="botones-accion">
+                    <button class="btn-editar" id="btn-editar-detalle">Editar</button>
+                    <button class="btn-eliminar" id="btn-eliminar-detalle">Eliminar</button>
+                    <button class="btn-cancelar" onclick="cerrarModal('modal-detalles')">Cerrar</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Modal 3: Confirmación de Eliminación -->
+        <div id="modal-confirmacion" class="oculto modal-fondo" style="z-index: 2000;">
+            <div class="modal-contenido" style="text-align: center; max-width: 350px;">
+                <h3 style="color: #e2e2e2; margin-bottom: 20px;">¿Estás seguro de que deseas eliminar este componente?</h3>
+                <div class="botones-accion">
+                    <button class="btn-eliminar" id="btn-confirmar-eliminar">Eliminar</button>
+                    <button class="btn-cancelar" onclick="cerrarModal('modal-confirmacion')">Cancelar</button>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <!-- Contenedor para Notificaciones Tipo Toast -->
+    <div id="toast-notificacion" class="toast oculto-toast">
+        <span id="toast-mensaje">Mensaje aquí</span>
+    </div>
+
+    <script src="app.js"></script>
+</body>
+</html>
