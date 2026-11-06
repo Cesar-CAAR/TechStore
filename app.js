@@ -27,12 +27,24 @@ window.mostrarNotificacion = function(mensaje, tipo = 'normal') {
 // ==========================================
 // 2. DETECCIÓN DE CONEXIÓN Y SINCRONIZACIÓN
 // ==========================================
+function actualizarEstadoRedEstatico(online) {
+    const indicador = document.getElementById('estado-red-estatico');
+    if (online) {
+        indicador.textContent = "✅ Conectado";
+        indicador.className = "estado-online";
+    } else {
+        indicador.textContent = "⚠️ Sin conexión - Modo local";
+        indicador.className = "estado-offline";
+    }
+}
+
+// Ya no se disparan notificaciones Toast aquí, solo se actualiza el indicador estático
 window.addEventListener('offline', () => {
-    mostrarNotificacion("⚠️ Estás sin conexión. Los cambios se guardarán localmente.", "error");
+    actualizarEstadoRedEstatico(false);
 });
 
 window.addEventListener('online', () => {
-    mostrarNotificacion("✅ Conexión restaurada. Sincronizando con el servidor...", "success");
+    actualizarEstadoRedEstatico(true);
     sincronizarColaOffline();
 });
 
@@ -40,7 +52,7 @@ window.addEventListener('online', () => {
 async function sincronizarColaOffline() {
     let cola = JSON.parse(localStorage.getItem('techstore_cola_offline')) || [];
     if (cola.length === 0) {
-        cargarComponentes(); // Si no hay nada pendiente, solo recargar datos
+        cargarComponentes(); 
         return; 
     }
     
@@ -48,7 +60,7 @@ async function sincronizarColaOffline() {
         try {
             if (tarea.metodo === 'POST') {
                 let payload = { ...tarea.data };
-                delete payload.id; // Render asignará el ID real
+                delete payload.id; 
                 await fetch(apiUrl, { method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify(payload) });
             } else if (tarea.metodo === 'PUT') {
                 await fetch(`${apiUrl}/${tarea.id}`, { method: 'PUT', headers: {'Content-Type': 'application/json'}, body: JSON.stringify(tarea.data) });
@@ -60,7 +72,6 @@ async function sincronizarColaOffline() {
         }
     }
     
-    // Limpiar la cola después de sincronizar y descargar los datos reales
     localStorage.removeItem('techstore_cola_offline');
     cargarComponentes();
     mostrarNotificacion("Sincronización completada exitosamente.", "success");
@@ -71,11 +82,10 @@ function guardarAccionOffline(metodo, id, data) {
     let cola = JSON.parse(localStorage.getItem('techstore_cola_offline')) || [];
     
     if (metodo === 'POST') {
-        data.id = 'temp_' + Date.now(); // ID temporal para la vista
+        data.id = 'temp_' + Date.now(); 
         cola.push({ metodo: 'POST', data: data });
         componentesActuales.push(data);
     } else if (metodo === 'PUT') {
-        // Si editamos algo que creamos offline (ID temporal), actualizamos el POST original
         if (String(id).startsWith('temp_')) {
             let postTarea = cola.find(q => q.metodo === 'POST' && q.data.id === id);
             if (postTarea) postTarea.data = data;
@@ -85,7 +95,6 @@ function guardarAccionOffline(metodo, id, data) {
         let index = componentesActuales.findIndex(c => c.id == id);
         if(index > -1) componentesActuales[index] = data;
     } else if (metodo === 'DELETE') {
-        // Si borramos algo creado offline, simplemente lo quitamos de la cola
         if (String(id).startsWith('temp_')) {
             cola = cola.filter(q => !(q.metodo === 'POST' && q.data.id === id));
         } else {
@@ -94,7 +103,6 @@ function guardarAccionOffline(metodo, id, data) {
         componentesActuales = componentesActuales.filter(c => c.id != id);
     }
     
-    // Guardar los cambios en caché
     localStorage.setItem('techstore_cola_offline', JSON.stringify(cola));
     localStorage.setItem('techstore_backup', JSON.stringify(componentesActuales));
     renderizarTabla(componentesActuales);
@@ -108,7 +116,6 @@ async function cargarComponentes() {
         const respuesta = await fetch(apiUrl);
         componentesActuales = await respuesta.json();
         
-        // Revisar si hay cambios offline pendientes de inyectar en la vista local
         let cola = JSON.parse(localStorage.getItem('techstore_cola_offline')) || [];
         if (cola.length === 0) {
             localStorage.setItem('techstore_backup', JSON.stringify(componentesActuales));
@@ -141,7 +148,6 @@ function renderizarTabla(componentes) {
         const tr = document.createElement('tr');
         tr.onclick = () => abrirModalDetalles(comp.id);
         
-        // Si tiene un ID temporal, mostrar indicador
         let visualId = String(comp.id).startsWith('temp_') ? '⏳ Pendiente' : `#${comp.id}`;
         
         tr.innerHTML = `
@@ -211,7 +217,6 @@ document.getElementById('form-componente').addEventListener('submit', async (e) 
 
     const metodo = idValue ? 'PUT' : 'POST';
     
-    // Si no hay internet, guardar localmente y salir
     if (!navigator.onLine) {
         let idFormateado = idValue;
         if (idValue && !String(idValue).startsWith('temp_')) {
@@ -227,7 +232,6 @@ document.getElementById('form-componente').addEventListener('submit', async (e) 
         return;
     }
 
-    // Flujo normal con internet
     if (idValue) componenteData.id = parseInt(idValue);
     const urlFinal = idValue ? `${apiUrl}/${idValue}` : apiUrl;
 
@@ -264,7 +268,6 @@ document.getElementById('btn-confirmar-eliminar').addEventListener('click', asyn
     cerrarModal('modal-confirmacion'); 
     cerrarModal('modal-detalles'); 
 
-    // Si no hay internet, encolar eliminación
     if (!navigator.onLine) {
         guardarAccionOffline('DELETE', idAEliminar, null);
         mostrarNotificacion("Eliminación encolada (Sin conexión).", "normal");
@@ -272,7 +275,6 @@ document.getElementById('btn-confirmar-eliminar').addEventListener('click', asyn
         return;
     }
     
-    // Flujo normal con internet
     try {
         const respuesta = await fetch(`${apiUrl}/${idAEliminar}`, { method: 'DELETE' });
         if (respuesta.ok) {
@@ -289,6 +291,7 @@ document.getElementById('btn-confirmar-eliminar').addEventListener('click', asyn
 // ==========================================
 // INICIAR APLICACIÓN
 // ==========================================
+actualizarEstadoRedEstatico(navigator.onLine); // Comprobar estado inicial al cargar
 cargarComponentes();
 
 // ==========================================

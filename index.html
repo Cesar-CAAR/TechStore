@@ -10,11 +10,16 @@
 </head>
 <body>
     <header class="header-dashboard">
-        <h1>💻 TechStore Dashboard</h1>
+        <h1>TechStore Dashboard - Romario Ramos Valenzuela</h1>
         <button class="btn-primario" onclick="abrirModalCrear()">+ Nuevo Componente</button>
     </header>
 
     <main class="contenedor-principal">
+        <!-- Indicador de red movido arriba de la tabla -->
+        <div class="estado-red-contenedor">
+            <span id="estado-red-estatico" class="estado-online">✅ Conectado</span>
+        </div>
+
         <!-- Panel del Inventario -->
         <div class="panel-tabla">
             <table id="tabla-componentes">

@@ -10,15 +10,19 @@ body {
     background-color: #1A1025;
     padding: 20px 40px;
     display: flex;
-    justify-content: space-between;
+    justify-content: flex-end; /* Empuja el botón hacia la derecha */
     align-items: center;
     border-bottom: 2px solid #8A2BE2;
+    position: relative;
 }
 
 .header-dashboard h1 {
     color: #FFD700;
     margin: 0;
     font-size: 1.8em;
+    position: absolute;
+    left: 50%;
+    transform: translateX(-50%); /* Centrado absoluto perfecto */
 }
 
 .btn-primario {
@@ -31,6 +35,7 @@ body {
     cursor: pointer;
     font-weight: bold;
     transition: background-color 0.2s;
+    z-index: 10;
 }
 
 .btn-primario:hover {
@@ -41,6 +46,45 @@ body {
     padding: 40px;
     max-width: 1200px;
     margin: 0 auto;
+}
+
+/* Espaciado del indicador de red por encima de la tabla */
+.estado-red-contenedor {
+    text-align: center;
+    margin-bottom: 25px;
+}
+
+#estado-red-estatico {
+    font-size: 0.85em;
+    font-weight: bold;
+    padding: 6px 16px;
+    border-radius: 12px;
+    display: inline-block;
+}
+
+.estado-online {
+    color: #38a169;
+    background-color: rgba(56, 161, 105, 0.1);
+    border: 1px solid #38a169;
+}
+
+.estado-offline {
+    color: #e53e3e;
+    background-color: rgba(229, 62, 62, 0.1);
+    border: 1px solid #e53e3e;
+}
+
+/* Responsividad para móviles */
+@media (max-width: 768px) {
+    .header-dashboard {
+        flex-direction: column;
+        justify-content: center;
+        gap: 20px;
+    }
+    .header-dashboard h1 {
+        position: static;
+        transform: none;
+    }
 }
 
 .panel-tabla {
